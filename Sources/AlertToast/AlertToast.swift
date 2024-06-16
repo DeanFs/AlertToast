@@ -118,10 +118,10 @@ public struct AlertToast: View{
         case error(_ color: Color)
         
         ///System image from `SFSymbols`
-        case systemImage(_ name: String, _ color: Color)
+        case systemImage(_ name: String, _ color: Color? = .accentColor, _ mode: Image.TemplateRenderingMode? = .original)
         
         ///Image from Assets
-        case image(_ name: String, _ color: Color)
+        case image(_ name: String, _ color: Color? = .accentColor, _ mode: Image.TemplateRenderingMode? = .original)
         
         ///Loading indicator (Circular)
         case loading
@@ -238,12 +238,13 @@ public struct AlertToast: View{
                     case .error(let color):
                         Image(systemName: "xmark")
                             .foregroundColor(color)
-                    case .systemImage(let name, let color):
+                    case .systemImage(let name, let color, let mode):
                         Image(systemName: name)
+                            .renderingMode(mode)
                             .foregroundColor(color)
-                    case .image(let name, let color):
+                    case .image(let name, let color, let mode):
                         Image(name)
-                            .renderingMode(.template)
+                            .renderingMode(mode)
                             .foregroundColor(color)
                     case .loading:
                         ActivityIndicator()
@@ -252,27 +253,30 @@ public struct AlertToast: View{
                     }
                     
                     Text(LocalizedStringKey(title ?? ""))
-                        .font(style?.titleFont ?? Font.headline.bold())
+                        .font(style?.titleFont ?? Font.body.bold())
+                        .textColor(style?.titleColor ?? nil)
                 }
                 
                 if subTitle != nil{
                     Text(LocalizedStringKey(subTitle!))
                         .font(style?.subTitleFont ?? Font.subheadline)
+                        .textColor(style?.subtitleColor ?? .secondary)
                 }
             }
             .multilineTextAlignment(.leading)
-            .textColor(style?.titleColor ?? nil)
-            .padding()
-            .frame(maxWidth: 400, alignment: .leading)
+            .truncationMode(.tail)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
             .alertBackground(style?.backgroundColor ?? nil)
-            .cornerRadius(10)
-            .padding([.horizontal, .bottom])
+            .cornerRadius(16)
+            .padding(.horizontal)
+            .padding(.bottom, 36)
         }
     }
     
     ///HUD View
     public var hud: some View{
-        Group{
+        VStack{
             HStack(spacing: 16){
                 switch type{
                 case .complete(let color):
@@ -283,14 +287,15 @@ public struct AlertToast: View{
                     Image(systemName: "xmark")
                         .hudModifier()
                         .foregroundColor(color)
-                case .systemImage(let name, let color):
+                case .systemImage(let name, let color, let mode):
                     Image(systemName: name)
-                        .hudModifier()
+                        .hudModifier(mode: mode)
                         .foregroundColor(color)
-                case .image(let name, let color):
+                case .image(let name, let color, let mode):
                     Image(name)
-                        .hudModifier()
+                        .hudModifier(mode: mode, contentModel: .fill, width: 50)
                         .foregroundColor(color)
+                        .cornerRadius(8)
                 case .loading:
                     ActivityIndicator()
                 case .regular:
@@ -302,29 +307,27 @@ public struct AlertToast: View{
                         if title != nil{
                             Text(LocalizedStringKey(title ?? ""))
                                 .font(style?.titleFont ?? Font.body.bold())
-                                .multilineTextAlignment(.center)
                                 .textColor(style?.titleColor ?? nil)
                         }
                         if subTitle != nil{
-                            Text(LocalizedStringKey(subTitle ?? ""))
-                                .font(style?.subTitleFont ?? Font.footnote)
-                                .opacity(0.7)
-                                .multilineTextAlignment(.center)
-                                .textColor(style?.subtitleColor ?? nil)
+                            Text(LocalizedStringKey(subTitle!))
+                                .font(style?.subTitleFont ?? Font.subheadline)
+                                .textColor(style?.subtitleColor ?? .secondary)
                         }
                     }
+                    .multilineTextAlignment(.leading)
+                    .truncationMode(.tail)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-            .frame(minHeight: 50)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
             .alertBackground(style?.backgroundColor ?? nil)
-            .clipShape(Capsule())
-            .overlay(Capsule().stroke(Color.gray.opacity(0.2), lineWidth: 1))
-            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 6)
-            .compositingGroup()
+            .cornerRadius(16)
+            .padding(.horizontal)
+            .padding(.top, 36)
+            
+            Spacer()
         }
-        .padding(.top)
     }
     
     ///Alert View
@@ -339,20 +342,21 @@ public struct AlertToast: View{
                 Spacer()
                 AnimatedXmark(color: color)
                 Spacer()
-            case .systemImage(let name, let color):
+            case .systemImage(let name, let color, let mode):
                 Spacer()
                 Image(systemName: name)
-                    .renderingMode(.template)
+                    .renderingMode(mode)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .scaledToFit()
                     .foregroundColor(color)
                     .padding(.bottom)
                 Spacer()
-            case .image(let name, let color):
+            case .image(let name, let color, let mode):
                 Spacer()
                 Image(name)
                     .resizable()
+                    .renderingMode(mode)
                     .aspectRatio(contentMode: .fit)
                     .scaledToFit()
                     .foregroundColor(color)
@@ -373,10 +377,10 @@ public struct AlertToast: View{
                 }
                 if subTitle != nil{
                     Text(LocalizedStringKey(subTitle ?? ""))
-                        .font(style?.subTitleFont ?? Font.footnote)
+                        .font(style?.subTitleFont ?? Font.subheadline)
                         .opacity(0.7)
                         .multilineTextAlignment(.center)
-                        .textColor(style?.subtitleColor ?? nil)
+                        .textColor(style?.subtitleColor ?? .secondary)
                 }
             }
         }
@@ -406,7 +410,7 @@ public struct AlertToastModifier: ViewModifier{
     @Binding var isPresenting: Bool
     
     ///Duration time to display the alert
-    @State var duration: Double = 2
+    @State var duration: Double = 4
     
     ///Tap to dismiss alert
     @State var tapToDismiss: Bool = true
@@ -460,20 +464,6 @@ public struct AlertToastModifier: ViewModifier{
                     .transition(AnyTransition.scale(scale: 0.8).combined(with: .opacity))
             case .hud:
                 alert()
-                    .overlay(
-                        GeometryReader{ geo -> AnyView in
-                            let rect = geo.frame(in: .global)
-                            
-                            if rect.integral != alertRect.integral{
-                                
-                                DispatchQueue.main.async {
-                                    
-                                    self.alertRect = rect
-                                }
-                            }
-                            return AnyView(EmptyView())
-                        }
-                    )
                     .onTapGesture {
                         onTap?()
                         if tapToDismiss{
@@ -518,7 +508,8 @@ public struct AlertToastModifier: ViewModifier{
                     main()
                         .offset(y: offsetY)
                 }
-                            .animation(Animation.spring(), value: isPresenting)
+                    .frame(maxWidth: screen.width, maxHeight: screen.height)
+                    .animation(Animation.spring(), value: isPresenting)
                 )
                 .valueChanged(value: isPresenting, onChange: { (presented) in
                     if presented{
@@ -527,25 +518,12 @@ public struct AlertToastModifier: ViewModifier{
                 })
         case .hud:
             content
-                .overlay(
-                    GeometryReader{ geo -> AnyView in
-                        let rect = geo.frame(in: .global)
-                        
-                        if rect.integral != hostRect.integral{
-                            DispatchQueue.main.async {
-                                self.hostRect = rect
-                            }
-                        }
-                        
-                        return AnyView(EmptyView())
-                    }
-                        .overlay(ZStack{
-                            main()
-                                .offset(y: offsetY)
-                        }
-                                    .frame(maxWidth: screen.width, maxHeight: screen.height)
-                                    .offset(y: offset)
-                                    .animation(Animation.spring(), value: isPresenting))
+                .overlay(ZStack{
+                    main()
+                        .offset(y: offsetY)
+                }
+                    .frame(maxWidth: screen.width, maxHeight: screen.height)
+                    .animation(Animation.spring(), value: isPresenting)
                 )
                 .valueChanged(value: isPresenting, onChange: { (presented) in
                     if presented{
@@ -558,9 +536,9 @@ public struct AlertToastModifier: ViewModifier{
                     main()
                         .offset(y: offsetY)
                 }
-                            .frame(maxWidth: screen.width, maxHeight: screen.height, alignment: .center)
-                            .edgesIgnoringSafeArea(.all)
-                            .animation(Animation.spring(), value: isPresenting))
+                    .frame(maxWidth: screen.width, maxHeight: screen.height, alignment: .center)
+                    .edgesIgnoringSafeArea(.all)
+                    .animation(Animation.spring(), value: isPresenting))
                 .valueChanged(value: isPresenting, onChange: { (presented) in
                     if presented{
                         onAppearAction()
@@ -601,8 +579,8 @@ fileprivate struct WithFrameModifier: ViewModifier{
     
     var withFrame: Bool
     
-    var maxWidth: CGFloat = 175
-    var maxHeight: CGFloat = 175
+    var maxWidth: CGFloat = 216
+    var maxHeight: CGFloat = 216
     
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -653,12 +631,14 @@ fileprivate struct TextForegroundModifier: ViewModifier{
 @available(iOS 13, macOS 11, *)
 fileprivate extension Image{
     
-    func hudModifier() -> some View{
+    func hudModifier(mode: Image.TemplateRenderingMode? = .template,
+                     contentModel: ContentMode = .fit,
+                     width: Double = 20) -> some View{
         self
-            .renderingMode(.template)
+            .renderingMode(mode)
             .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(maxWidth: 20, maxHeight: 20, alignment: .center)
+            .aspectRatio(contentMode: contentModel)
+            .frame(maxWidth: width, maxHeight: width, alignment: .center)
     }
 }
 
