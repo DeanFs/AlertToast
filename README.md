@@ -66,7 +66,7 @@ Alert Toast is an open-source library in Github to use with SwiftUI. It allows y
 CocoaPods is a dependency manager for Cocoa projects. For usage and installation instructions, visit their website. To integrate `AlertToast` into your Xcode project using CocoaPods, specify it in your Podfile:
 
 ```ruby
-pod 'AlertToast'
+pod 'AlertToast', git: "https://github.com/DeanFs/AlertToast.git"
 ```
 
 ------
@@ -78,7 +78,7 @@ The [Swift Package Manager](https://swift.org/package-manager/) is a tool for ma
 To integrate `AlertToast` into your Xcode project using Xcode 12, specify it in `File > Swift Packages > Add Package Dependency...`:
 
 ```ogdl
-https://github.com/elai950/AlertToast.git, :branch="master"
+https://github.com/DeanFs/AlertToast.git, :branch="master"
 ```
 
 For Xcode 13, please refer [this article](https://iiroalhonen.medium.com/adding-a-swift-package-dependency-in-xcode-13-937b2caaf218) to install `AlertToast` 
