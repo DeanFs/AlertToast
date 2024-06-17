@@ -90,11 +90,6 @@ fileprivate struct AnimatedXmark: View {
 
 @available(iOS 13, macOS 11, *)
 public struct AlertToast: View{
-    
-    public enum ToastAnimation{
-        case slide, pop
-    }
-    
     /// Determine how the alert will be display
     public enum DisplayMode: Equatable{
         
