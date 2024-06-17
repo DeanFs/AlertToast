@@ -113,10 +113,15 @@ public struct AlertToast: View{
         case error(_ color: Color)
         
         ///System image from `SFSymbols`
-        case systemImage(_ name: String, _ color: Color? = .accentColor, _ mode: Image.TemplateRenderingMode? = .original)
+        case systemImage(_ name: String, 
+                         _ color: Color? = .accentColor,
+                         _ mode: Image.TemplateRenderingMode? = .template)
         
         ///Image from Assets
-        case image(_ name: String, _ color: Color? = .accentColor, _ mode: Image.TemplateRenderingMode? = .original)
+        case image(_ name: String, 
+                   _ color: Color? = .accentColor,
+                   _ mode: Image.TemplateRenderingMode? = .template,
+                   _ width: Double = 40)
         
         ///Loading indicator (Circular)
         case loading
@@ -235,7 +240,7 @@ public struct AlertToast: View{
                             Image(systemName: name)
                                 .renderingMode(mode)
                                 .foregroundColor(color)
-                        case .image(let name, let color, let mode):
+                        case .image(let name, let color, let mode, let width):
                             Image(name)
                                 .renderingMode(mode)
                                 .foregroundColor(color)
@@ -286,9 +291,9 @@ public struct AlertToast: View{
                         Image(systemName: name)
                             .noticeModifier(mode: mode)
                             .foregroundColor(color)
-                    case .image(let name, let color, let mode):
+                    case .image(let name, let color, let mode, let width):
                         Image(name)
-                            .noticeModifier(mode: mode, contentModel: .fill, width: 50)
+                            .noticeModifier(mode: mode, width: width)
                             .foregroundColor(color)
                             .cornerRadius(8)
                     case .loading:
@@ -347,7 +352,7 @@ public struct AlertToast: View{
                         .foregroundColor(color)
                         .padding(.bottom)
                     Spacer()
-                case .image(let name, let color, let mode):
+                case .image(let name, let color, let mode, let width):
                     Spacer()
                     Image(name)
                         .resizable()
@@ -627,12 +632,11 @@ fileprivate struct TextForegroundModifier: ViewModifier{
 fileprivate extension Image{
     
     func noticeModifier(mode: Image.TemplateRenderingMode? = .template,
-                        contentModel: ContentMode = .fit,
                         width: Double = 20) -> some View{
         self
             .renderingMode(mode)
             .resizable()
-            .aspectRatio(contentMode: contentModel)
+            .aspectRatio(contentMode: .fit)
             .frame(maxWidth: width, maxHeight: width, alignment: .center)
     }
 }
