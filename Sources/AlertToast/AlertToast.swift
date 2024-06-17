@@ -91,21 +91,21 @@ fileprivate struct AnimatedXmark: View {
 @available(iOS 13, macOS 11, *)
 public struct AlertToast: View{
     
-    public enum BannerAnimation{
+    public enum ToastAnimation{
         case slide, pop
     }
     
     /// Determine how the alert will be display
     public enum DisplayMode: Equatable{
         
-        ///Present at the center of the screen
+        ///从中间弹出，图标与文字上下结构显示
         case alert
         
-        ///Drop from the top of the screen
-        case hud
+        ///从顶部左侧弹出显示在顶部，图标文字整体左右布局
+        case notice
         
-        ///Banner from the bottom of the view
-        case banner(_ transition: BannerAnimation)
+        ///从顶部弹出显示在顶部，图标与标题同行
+        case toast
     }
     
     /// Determine what the alert will display
@@ -142,48 +142,48 @@ public struct AlertToast: View{
         ///Get background color
         var backgroundColor: Color? {
             switch self{
-            case .style(backgroundColor: let color, _, _, _, _):
-                return color
+                case .style(backgroundColor: let color, _, _, _, _):
+                    return color
             }
         }
         
         /// Get title color
         var titleColor: Color? {
             switch self{
-            case .style(_,let color, _,_,_):
-                return color
+                case .style(_,let color, _,_,_):
+                    return color
             }
         }
         
         /// Get subTitle color
         var subtitleColor: Color? {
             switch self{
-            case .style(_,_, let color, _,_):
-                return color
+                case .style(_,_, let color, _,_):
+                    return color
             }
         }
         
         /// Get title font
         var titleFont: Font? {
             switch self {
-            case .style(_, _, _, titleFont: let font, _):
-                return font
+                case .style(_, _, _, titleFont: let font, _):
+                    return font
             }
         }
         
         /// Get subTitle font
         var subTitleFont: Font? {
             switch self {
-            case .style(_, _, _, _, subTitleFont: let font):
-                return font
+                case .style(_, _, _, _, subTitleFont: let font):
+                    return font
             }
         }
     }
     
     ///The display mode
     /// - `alert`
-    /// - `hud`
-    /// - `banner`
+    /// - `notice`
+    /// - `toast`
     public var displayMode: DisplayMode = .alert
     
     ///What the alert would show
@@ -223,33 +223,31 @@ public struct AlertToast: View{
         self.title = title
     }
     
-    ///Banner from the bottom of the view
-    public var banner: some View{
+    ///Toast from the bottom of the view
+    public var toast: some View{
         VStack{
-            Spacer()
-            
-            //Banner view starts here
+            //Toast view starts here
             VStack(alignment: .leading, spacing: 10){
                 HStack{
                     switch type{
-                    case .complete(let color):
-                        Image(systemName: "checkmark")
-                            .foregroundColor(color)
-                    case .error(let color):
-                        Image(systemName: "xmark")
-                            .foregroundColor(color)
-                    case .systemImage(let name, let color, let mode):
-                        Image(systemName: name)
-                            .renderingMode(mode)
-                            .foregroundColor(color)
-                    case .image(let name, let color, let mode):
-                        Image(name)
-                            .renderingMode(mode)
-                            .foregroundColor(color)
-                    case .loading:
-                        ActivityIndicator()
-                    case .regular:
-                        EmptyView()
+                        case .complete(let color):
+                            Image(systemName: "checkmark")
+                                .foregroundColor(color)
+                        case .error(let color):
+                            Image(systemName: "xmark")
+                                .foregroundColor(color)
+                        case .systemImage(let name, let color, let mode):
+                            Image(systemName: name)
+                                .renderingMode(mode)
+                                .foregroundColor(color)
+                        case .image(let name, let color, let mode):
+                            Image(name)
+                                .renderingMode(mode)
+                                .foregroundColor(color)
+                        case .loading:
+                            ActivityIndicator()
+                        case .regular:
+                            EmptyView()
                     }
                     
                     Text(LocalizedStringKey(title ?? ""))
@@ -271,35 +269,37 @@ public struct AlertToast: View{
             .cornerRadius(16)
             .padding(.horizontal)
             .padding(.bottom, 36)
+            
+            Spacer()
         }
     }
     
-    ///HUD View
-    public var hud: some View{
+    ///Notice View
+    public var notice: some View{
         VStack{
             HStack(spacing: 16){
                 switch type{
-                case .complete(let color):
-                    Image(systemName: "checkmark")
-                        .hudModifier()
-                        .foregroundColor(color)
-                case .error(let color):
-                    Image(systemName: "xmark")
-                        .hudModifier()
-                        .foregroundColor(color)
-                case .systemImage(let name, let color, let mode):
-                    Image(systemName: name)
-                        .hudModifier(mode: mode)
-                        .foregroundColor(color)
-                case .image(let name, let color, let mode):
-                    Image(name)
-                        .hudModifier(mode: mode, contentModel: .fill, width: 50)
-                        .foregroundColor(color)
-                        .cornerRadius(8)
-                case .loading:
-                    ActivityIndicator()
-                case .regular:
-                    EmptyView()
+                    case .complete(let color):
+                        Image(systemName: "checkmark")
+                            .noticeModifier()
+                            .foregroundColor(color)
+                    case .error(let color):
+                        Image(systemName: "xmark")
+                            .noticeModifier()
+                            .foregroundColor(color)
+                    case .systemImage(let name, let color, let mode):
+                        Image(systemName: name)
+                            .noticeModifier(mode: mode)
+                            .foregroundColor(color)
+                    case .image(let name, let color, let mode):
+                        Image(name)
+                            .noticeModifier(mode: mode, contentModel: .fill, width: 50)
+                            .foregroundColor(color)
+                            .cornerRadius(8)
+                    case .loading:
+                        ActivityIndicator()
+                    case .regular:
+                        EmptyView()
                 }
                 
                 if title != nil || subTitle != nil{
@@ -334,38 +334,38 @@ public struct AlertToast: View{
     public var alert: some View{
         VStack{
             switch type{
-            case .complete(let color):
-                Spacer()
-                AnimatedCheckmark(color: color)
-                Spacer()
-            case .error(let color):
-                Spacer()
-                AnimatedXmark(color: color)
-                Spacer()
-            case .systemImage(let name, let color, let mode):
-                Spacer()
-                Image(systemName: name)
-                    .renderingMode(mode)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .scaledToFit()
-                    .foregroundColor(color)
-                    .padding(.bottom)
-                Spacer()
-            case .image(let name, let color, let mode):
-                Spacer()
-                Image(name)
-                    .resizable()
-                    .renderingMode(mode)
-                    .aspectRatio(contentMode: .fit)
-                    .scaledToFit()
-                    .foregroundColor(color)
-                    .padding(.bottom)
-                Spacer()
-            case .loading:
-                ActivityIndicator()
-            case .regular:
-                EmptyView()
+                case .complete(let color):
+                    Spacer()
+                    AnimatedCheckmark(color: color)
+                    Spacer()
+                case .error(let color):
+                    Spacer()
+                    AnimatedXmark(color: color)
+                    Spacer()
+                case .systemImage(let name, let color, let mode):
+                    Spacer()
+                    Image(systemName: name)
+                        .renderingMode(mode)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
+                        .foregroundColor(color)
+                        .padding(.bottom)
+                    Spacer()
+                case .image(let name, let color, let mode):
+                    Spacer()
+                    Image(name)
+                        .resizable()
+                        .renderingMode(mode)
+                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
+                        .foregroundColor(color)
+                        .padding(.bottom)
+                    Spacer()
+                case .loading:
+                    ActivityIndicator()
+                case .regular:
+                    EmptyView()
             }
             
             VStack(spacing: type == .regular ? 8 : 2){
@@ -393,12 +393,12 @@ public struct AlertToast: View{
     ///Body init determine by `displayMode`
     public var body: some View{
         switch displayMode{
-        case .alert:
-            alert
-        case .hud:
-            hud
-        case .banner:
-            banner
+            case .alert:
+                alert
+            case .notice:
+                notice
+            case .toast:
+                toast
         }
     }
 }
@@ -446,54 +446,54 @@ public struct AlertToastModifier: ViewModifier{
         if isPresenting{
             
             switch alert().displayMode{
-            case .alert:
-                alert()
-                    .onTapGesture {
-                        onTap?()
-                        if tapToDismiss{
-                            withAnimation(Animation.spring()){
-                                self.workItem?.cancel()
-                                isPresenting = false
-                                self.workItem = nil
+                case .alert:
+                    alert()
+                        .onTapGesture {
+                            onTap?()
+                            if tapToDismiss{
+                                withAnimation(Animation.spring()){
+                                    self.workItem?.cancel()
+                                    isPresenting = false
+                                    self.workItem = nil
+                                }
                             }
                         }
-                    }
-                    .onDisappear(perform: {
-                        completion?()
-                    })
-                    .transition(AnyTransition.scale(scale: 0.8).combined(with: .opacity))
-            case .hud:
-                alert()
-                    .onTapGesture {
-                        onTap?()
-                        if tapToDismiss{
-                            withAnimation(Animation.spring()){
-                                self.workItem?.cancel()
-                                isPresenting = false
-                                self.workItem = nil
+                        .onDisappear(perform: {
+                            completion?()
+                        })
+                        .transition(AnyTransition.scale(scale: 0.8).combined(with: .opacity))
+                case .notice:
+                    alert()
+                        .onTapGesture {
+                            onTap?()
+                            if tapToDismiss{
+                                withAnimation(Animation.spring()){
+                                    self.workItem?.cancel()
+                                    isPresenting = false
+                                    self.workItem = nil
+                                }
                             }
                         }
-                    }
-                    .onDisappear(perform: {
-                        completion?()
-                    })
-                    .transition(AnyTransition.move(edge: .top).combined(with: .opacity))
-            case .banner:
-                alert()
-                    .onTapGesture {
-                        onTap?()
-                        if tapToDismiss{
-                            withAnimation(Animation.spring()){
-                                self.workItem?.cancel()
-                                isPresenting = false
-                                self.workItem = nil
+                        .onDisappear(perform: {
+                            completion?()
+                        })
+                        .transition(AnyTransition.slide.combined(with: .opacity))
+                case .toast:
+                    alert()
+                        .onTapGesture {
+                            onTap?()
+                            if tapToDismiss{
+                                withAnimation(Animation.spring()){
+                                    self.workItem?.cancel()
+                                    isPresenting = false
+                                    self.workItem = nil
+                                }
                             }
                         }
-                    }
-                    .onDisappear(perform: {
-                        completion?()
-                    })
-                    .transition(alert().displayMode == .banner(.slide) ? AnyTransition.slide.combined(with: .opacity) : AnyTransition.move(edge: .bottom))
+                        .onDisappear(perform: {
+                            completion?()
+                        })
+                        .transition(AnyTransition.move(edge: .top).combined(with: .opacity))
             }
             
         }
@@ -502,48 +502,48 @@ public struct AlertToastModifier: ViewModifier{
     @ViewBuilder
     public func body(content: Content) -> some View {
         switch alert().displayMode{
-        case .banner:
-            content
-                .overlay(ZStack{
-                    main()
-                        .offset(y: offsetY)
-                }
-                    .frame(maxWidth: screen.width, maxHeight: screen.height)
-                    .animation(Animation.spring(), value: isPresenting)
-                )
-                .valueChanged(value: isPresenting, onChange: { (presented) in
-                    if presented{
-                        onAppearAction()
+            case .toast:
+                content
+                    .overlay(ZStack{
+                        main()
+                            .offset(y: offsetY)
                     }
-                })
-        case .hud:
-            content
-                .overlay(ZStack{
-                    main()
-                        .offset(y: offsetY)
-                }
-                    .frame(maxWidth: screen.width, maxHeight: screen.height)
-                    .animation(Animation.spring(), value: isPresenting)
-                )
-                .valueChanged(value: isPresenting, onChange: { (presented) in
-                    if presented{
-                        onAppearAction()
+                        .frame(maxWidth: screen.width, maxHeight: screen.height)
+                        .animation(Animation.spring(), value: isPresenting)
+                    )
+                    .valueChanged(value: isPresenting, onChange: { (presented) in
+                        if presented{
+                            onAppearAction()
+                        }
+                    })
+            case .notice:
+                content
+                    .overlay(ZStack{
+                        main()
+                            .offset(y: offsetY)
                     }
-                })
-        case .alert:
-            content
-                .overlay(ZStack{
-                    main()
-                        .offset(y: offsetY)
-                }
-                    .frame(maxWidth: screen.width, maxHeight: screen.height, alignment: .center)
-                    .edgesIgnoringSafeArea(.all)
-                    .animation(Animation.spring(), value: isPresenting))
-                .valueChanged(value: isPresenting, onChange: { (presented) in
-                    if presented{
-                        onAppearAction()
+                        .frame(maxWidth: screen.width, maxHeight: screen.height)
+                        .animation(Animation.spring(), value: isPresenting)
+                    )
+                    .valueChanged(value: isPresenting, onChange: { (presented) in
+                        if presented{
+                            onAppearAction()
+                        }
+                    })
+            case .alert:
+                content
+                    .overlay(ZStack{
+                        main()
+                            .offset(y: offsetY)
                     }
-                })
+                        .frame(maxWidth: screen.width, maxHeight: screen.height, alignment: .center)
+                        .edgesIgnoringSafeArea(.all)
+                        .animation(Animation.spring(), value: isPresenting))
+                    .valueChanged(value: isPresenting, onChange: { (presented) in
+                        if presented{
+                            onAppearAction()
+                        }
+                    })
         }
         
     }
@@ -631,9 +631,9 @@ fileprivate struct TextForegroundModifier: ViewModifier{
 @available(iOS 13, macOS 11, *)
 fileprivate extension Image{
     
-    func hudModifier(mode: Image.TemplateRenderingMode? = .template,
-                     contentModel: ContentMode = .fit,
-                     width: Double = 20) -> some View{
+    func noticeModifier(mode: Image.TemplateRenderingMode? = .template,
+                        contentModel: ContentMode = .fit,
+                        width: Double = 20) -> some View{
         self
             .renderingMode(mode)
             .resizable()
